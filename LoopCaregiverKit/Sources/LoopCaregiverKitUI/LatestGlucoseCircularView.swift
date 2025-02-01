@@ -11,24 +11,25 @@ import LoopKit
 import SwiftUI
 
 public struct LatestGlucoseCircularView: View {
-    
     public let viewModel: WidgetViewModel
-    @Environment(\.colorScheme) var colorScheme
-    
-    public init(viewModel: WidgetViewModel) {
-        self.viewModel = viewModel
+    @Environment(\.colorScheme)
+    var colorScheme
+
+    public init(glucoseValue: GlucoseTimelineValue) {
+        self.viewModel = WidgetViewModel(glucoseValue: glucoseValue)
     }
-    
+
     public var body: some View {
         VStack {
             Text(viewModel.currentGlucoseDateText)
                 .strikethrough(viewModel.isGlucoseStale)
                 .font(.footnote)
-            Text(viewModel.currentGlucoseText)
+                .minimumScaleFactor(0.8)
+            Text(viewModel.currentGlucoseAndChangeText)
                 .foregroundStyle(egvColor)
                 .strikethrough(viewModel.isGlucoseStale)
-                .font(.headline)
                 .bold()
+                .minimumScaleFactor(0.8)
             if let currentTrendImageName = viewModel.currentTrendImageName {
                 Image(systemName: currentTrendImageName)
                     .resizable()
@@ -36,23 +37,23 @@ public struct LatestGlucoseCircularView: View {
                     .foregroundStyle(egvColor)
                     .frame(maxWidth: 15)
                     .offset(.init(width: 0.0, height: -7.0))
+                    .accessibilityLabel(Text(currentTrendImageName))
+                    .minimumScaleFactor(0.8)
             }
         }
     }
-    
+
     var egvColor: Color {
         colorScheme == .dark ? viewModel.egvValueColor : .primary
     }
-    
 }
 
-// TODO: fails to render and breaks other previes afer failure
+// TODO: fails to render and breaks other previews after failure
+
 /*
 struct CurrentBGView_Previews: PreviewProvider {
     static var previews: some View {
-        let latestGlucose = NewGlucoseSample.placeholder()
-        let viewModel = WidgetViewModel(timelineEntryDate: Date(), latestGlucose: latestGlucose, lastGlucoseChange: 3, isLastEntry: true, glucoseDisplayUnits: .gramsPerUnit)
-        LatestGlucoseCircularView(viewModel: viewModel)
+        LatestGlucoseCircularView(glucoseValue: .previewsValue())
     }
 }
 */

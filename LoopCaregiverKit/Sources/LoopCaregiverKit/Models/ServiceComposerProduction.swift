@@ -6,26 +6,29 @@
 //
 
 import Foundation
+import OSLog
 
 public class ServiceComposerProduction: ServiceComposer {
     public let settings: CaregiverSettings
     public let accountServiceManager: AccountServiceManager
     public let watchService: WatchService
     public let deepLinkHandler: DeepLinkHandler
-    
+    private let defaultLog = Logger()
+
     public init() {
+        defaultLog.log("Initializing ServiceComposerProduction for bundle: \(Bundle.main.bundlePath)")
         let userDefaults = Self.createUserDefaults()
         self.settings = Self.createCaregiverSettings(userDefaults: userDefaults)
-        self.accountServiceManager = Self.createAccountServiceManager()
+        self.accountServiceManager = Self.createAccountServiceManager(settings: settings)
         self.watchService = Self.createWatchService(accountServiceManager: accountServiceManager)
         self.deepLinkHandler = Self.createDeepLinkHandler(accountServiceManager: accountServiceManager, settings: settings, watchService: watchService)
     }
-    
+
     static func createCaregiverSettings(userDefaults: UserDefaults) -> CaregiverSettings {
         let appGroupsSupported = Self.appGroupName() != nil
         return CaregiverSettings(userDefaults: userDefaults, appGroupsSupported: appGroupsSupported)
     }
-    
+
     static func createPersistentContainerFactory() -> PersistentContainerFactory {
         if let appGroupName = appGroupName() {
             return AppGroupPersisentContainerFactory(appGroupName: appGroupName)
@@ -33,7 +36,7 @@ public class ServiceComposerProduction: ServiceComposer {
             return NoAppGroupsPersistentContainerFactory()
         }
     }
-    
+
     static func createUserDefaults() -> UserDefaults {
         if let appGroupName = appGroupName() {
             return UserDefaults(suiteName: appGroupName)!
@@ -41,12 +44,12 @@ public class ServiceComposerProduction: ServiceComposer {
             return UserDefaults.standard
         }
     }
-    
-    static func createAccountServiceManager() -> AccountServiceManager {
+
+    static func createAccountServiceManager(settings: CaregiverSettings) -> AccountServiceManager {
         let containerFactory = Self.createPersistentContainerFactory()
-        return AccountServiceManager(accountService: CoreDataAccountService(containerFactory: containerFactory))
+        return AccountServiceManager(accountService: CoreDataAccountService(containerFactory: containerFactory), settings: settings)
     }
-    
+
     static func createWatchService(accountServiceManager: AccountServiceManager) -> WatchService {
         return WatchService(accountService: accountServiceManager)
     }
@@ -58,15 +61,15 @@ public class ServiceComposerProduction: ServiceComposer {
         return DeepLinkHandlerWatch(accountService: accountServiceManager, settings: settings, watchService: watchService)
 #else
         return DeepLinkHandlerPhone(accountService: accountServiceManager, settings: settings, watchService: watchService)
-        fatalError("Unsupported platform")
+        queuedFatalError("Unsupported platform")
 #endif
     }
-    
+
     static func appGroupName() -> String? {
-        guard let appGroupName = Bundle.main.appGroupSuiteName, let _ = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroupName) else {
+        guard let appGroupName = Bundle.main.appGroupSuiteName, FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroupName) != nil else {
             return nil
         }
-        
+
         return appGroupName
     }
 }

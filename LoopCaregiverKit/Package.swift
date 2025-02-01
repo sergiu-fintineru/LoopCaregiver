@@ -5,17 +5,17 @@ import PackageDescription
 
 let package = Package(
     name: "LoopCaregiverKit",
-    platforms: [.iOS(.v16), .watchOS(.v10)],
+    platforms: [.iOS(.v16), .watchOS(.v9)],
     products: [
         .library(
             name: "LoopCaregiverKit",
-            targets: ["LoopCaregiverKit", "LoopCaregiverKitUI"]),
+            targets: ["LoopCaregiverKit", "LoopCaregiverKitUI"])
     ],
     dependencies: [
         .package(url: "https://github.com/LoopKit/LoopKit.git", branch: "dev"),
-        //.package(path: "../../LoopKit"),
+        // .package(path: "../../LoopKit"),
         .package(url: "https://github.com/gestrich/NightscoutKit.git", branch: "feature/2023-07/bg/remote-commands"),
-        .package(url: "https://github.com/mattrubin/OneTimePassword.git", branch: "develop"),
+        .package(url: "https://github.com/mattrubin/OneTimePassword.git", branch: "develop")
     ],
     targets: [
         .target(
@@ -30,11 +30,11 @@ let package = Package(
             name: "LoopCaregiverKitUI",
             dependencies: [
                 "LoopCaregiverKit",
-                "LoopKit",
+                "LoopKit"
             ]
         ),
         .testTarget(
             name: "LoopCaregiverKitTests",
-            dependencies: ["LoopCaregiverKit"]),
+            dependencies: ["LoopCaregiverKit"])
     ]
 )
